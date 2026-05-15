@@ -1,17 +1,23 @@
-# genui_pokemon
+# Gen UI Pokemon Assistant
 
-A new Flutter project.
+Build a team of Pokemon using Flutter GenUI and Gemini.
+Actively working to add richer Catalog Items such as condensed teams, move info, and trainer personality tuners to allow you to build the ultimate pokemon team.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Get an API key
 
-A few resources to get you started if this is your first Flutter project:
+Obtain a Google Cloud API key with access
+to the Generative Language API from the
+[Google AI Studio](https://aistudio.google.com/app/apikey).
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Set up the API key
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+* Option 1: Using the VS Code based IDE UI
+
+1. Open the example in the IDE.
+2. Set the API key in the `.env` file of the workspace root:
+
+   ```bash
+   GEMINI_API_KEY=your_api_key_here
+   ```

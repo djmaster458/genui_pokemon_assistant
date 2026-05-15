@@ -31,9 +31,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     final chatState = ref.watch(conversationProvider);
 
-
     // Auto-scroll when new messages arrive.
-    ref.listen(conversationProvider, (previous, next) => _scrollToBottom());
+    ref.listen(
+      conversationProvider.select((state) => state.messages),
+      (previous, next) => _scrollToBottom(),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -53,7 +55,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   final msg = chatState.messages[index];
                   return _MessageBubble(
                     message: msg,
-                    surfaceController: chatState.surfaceController!,
+                    surfaceController: chatState.surfaceController,
                   );
                 },
               ),
