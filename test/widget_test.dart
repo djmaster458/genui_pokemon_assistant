@@ -1,30 +1,28 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:genui_pokemon/ai/ai_client.dart';
 import 'package:genui_pokemon/main.dart';
+import 'package:genui_pokemon/provider/ai_client_provider.dart';
+
+class _StubAiClient implements AiClient {
+  @override
+  Stream<String> sendStream(
+    String prompt, {
+    required List<AiMessage> history,
+  }) => const Stream.empty();
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('ChatScreen renders the AppBar title', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [aiClientProvider.overrideWithValue(_StubAiClient())],
+        child: const PokemonApp(),
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Pokémon Team Builder'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
   });
 }
