@@ -4,7 +4,7 @@ import 'package:genui_pokemon/catalog/pokemon_catalog.dart';
 
 /// A provider that supplies a catalog of items, including both basic gen UI items and Pokémon cards.
 final catalogProvider = Provider<Catalog>((ref) {
-  return BasicCatalogItems.asCatalog().copyWith(newItems: [
-    PokemonCatalog.pokemonCard,
-  ]);
+  return BasicCatalogItems.asCatalog().copyWith(
+    newItems: [PokemonCatalog.pokemonCard, PokemonCatalog.pokemonTeam],
+  );
 });

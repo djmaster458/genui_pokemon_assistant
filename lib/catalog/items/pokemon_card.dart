@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:genui/genui.dart';
 import 'package:genui_pokemon/utils.dart';
@@ -43,18 +42,18 @@ extension type _PokemonCardData.fromMap(JsonMap _json) {
     required int defense,
     required int speed,
   }) => _PokemonCardData.fromMap({
-        'name': name,
-        'number': number,
-        'type1': type1,
-        'type2': type2,
-        'imageUrl': imageUrl,
-        'description': description,
-        'hp': hp,
-        'attack': attack,
-        'defense': defense,
-        'speed': speed,
-    });
-  
+    'name': name,
+    'number': number,
+    'type1': type1,
+    'type2': type2,
+    'imageUrl': imageUrl,
+    'description': description,
+    'hp': hp,
+    'attack': attack,
+    'defense': defense,
+    'speed': speed,
+  });
+
   String get name => _json['name'] as String;
   int get number => _json['number'] as int;
   String get type1 => _json['type1'] as String;

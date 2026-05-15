@@ -9,7 +9,8 @@ import 'package:genui_pokemon/prompts/system_prompt.dart';
 /// Implements [Transport] by routing through [AiClient] while managing
 /// the conversation history locally.
 class PokemonTransport implements Transport {
-  PokemonTransport(this._aiClient, Catalog catalog) : _history = [(role: 'system', text: buildSystemPrompt(catalog))];
+  PokemonTransport(this._aiClient, Catalog catalog)
+    : _history = [(role: 'system', text: buildSystemPrompt(catalog))];
 
   final AiClient _aiClient;
   final A2uiTransportAdapter _adapter = A2uiTransportAdapter();
@@ -36,10 +37,7 @@ class PokemonTransport implements Transport {
     _history.add((role: 'user', text: prompt));
     final responseBuffer = StringBuffer();
 
-    await for (final chunk in _aiClient.sendStream(
-      prompt,
-      history: _history,
-    )) {
+    await for (final chunk in _aiClient.sendStream(prompt, history: _history)) {
       responseBuffer.write(chunk);
       _adapter.addChunk(chunk);
     }

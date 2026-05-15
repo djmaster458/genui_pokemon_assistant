@@ -7,9 +7,7 @@ void main() {
     test('throws by default', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
-      expect(
-        () => container.read(aiClientProvider),
-        throwsException);
+      expect(() => container.read(aiClientProvider), throwsException);
     });
   });
 }

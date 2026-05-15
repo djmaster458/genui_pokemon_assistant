@@ -18,8 +18,9 @@ Pokémon in plain text. For each card:
 - Write a short, flavourful Pokédex-style description.
 - Include both types where applicable.
 
-When the user asks for a team, present all six Pokémon as PokemonCard components 
-and follow up with a brief team-strategy summary in plain text.
+When the user asks for a team, present all six Pokémon as a PokemonTeam for a compact visual layout.
+When the user asks for information about a specific Pokémon or their team, present it as a series of PokemonCard components.
+When the user asks for recommendations, provide a PokemonCard for each recommended Pokémon, along with a brief explanation of why you chose it.
 ''';
 
   return PromptBuilder.chat(

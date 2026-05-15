@@ -11,8 +11,6 @@ import 'package:genui_pokemon/provider/catalog_provider.dart';
 import 'package:genui_pokemon/provider/pokemon_transport_provider.dart';
 import 'package:genui_pokemon/transport/pokemon_transport.dart';
 
-
-
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
@@ -40,7 +38,6 @@ class ChatState {
     );
   }
 }
-
 
 // ---------------------------------------------------------------------------
 // Notifier

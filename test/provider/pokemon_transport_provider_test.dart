@@ -19,10 +19,7 @@ class _CapturingAiClient implements AiClient {
   final List<_AiCall> calls = [];
 
   @override
-  Stream<String> sendStream(
-    String prompt, {
-    required List<AiMessage> history,
-  }) {
+  Stream<String> sendStream(String prompt, {required List<AiMessage> history}) {
     calls.add(_AiCall(prompt: prompt, history: List<AiMessage>.from(history)));
     final chunks = queuedResponses.isEmpty
         ? const <String>[]
@@ -69,10 +66,10 @@ void main() {
       expect(client.calls, hasLength(1));
       expect(client.calls.first.prompt, 'Kanto starters');
       expect(client.calls.first.history.first.role, 'system');
-      expect(
-        client.calls.first.history.last,
-        (role: 'user', text: 'Kanto starters'),
-      );
+      expect(client.calls.first.history.last, (
+        role: 'user',
+        text: 'Kanto starters',
+      ));
       expect(textChunks.join(), 'Bulbasaur');
     });
   });

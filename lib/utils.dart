@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 /// Maps a Pokémon type name to its representative Material color.

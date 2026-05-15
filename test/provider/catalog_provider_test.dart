@@ -6,12 +6,13 @@ import 'package:genui_pokemon/provider/catalog_provider.dart';
 
 void main() {
   group('CatalogProvider', () {
-    test('provides basic gen UI and pokemon cards catalog items', () {
+    test('provides basic gen UI and pokemon catalog items', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
       final catalog = container.read(catalogProvider);
       expect(catalog.items, contains(PokemonCatalog.pokemonCard));
+      expect(catalog.items, contains(PokemonCatalog.pokemonTeam));
       expect(catalog.items, containsAll(BasicCatalogItems.asCatalog().items));
     });
   });
