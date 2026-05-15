@@ -3,7 +3,15 @@
 Build a team of Pokemon using Flutter GenUI and Gemini.
 Actively working to add richer Catalog Items such as condensed teams, move info, and trainer personality tuners to allow you to build the ultimate pokemon team.
 
-![Pokemon Assistant](./docs/assets/pokemon_assistant.png)
+Web
+<p align="center">
+   <img src="./docs/assets/pokemon_assistant.png" alt="Pokemon Assistant" width="900" />
+</p>
+
+Mobile
+<p align="center">
+   <img src="./docs/assets/pokemon_assistant_mobile.png" alt="Pokemon Assistant Mobile" width="320" />
+</p>
 
 ## Getting Started
 
