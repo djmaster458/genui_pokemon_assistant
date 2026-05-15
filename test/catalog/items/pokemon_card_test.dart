@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:genui_pokemon/catalog/items/pokemon_card.dart';
-import 'package:genui_pokemon/catalog/pokemon_catalog.dart';
 import 'package:genui_pokemon/utils.dart';
 
 void main() {
