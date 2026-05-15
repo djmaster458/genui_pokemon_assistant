@@ -16,8 +16,8 @@ to the Generative Language API from the
 * Option 1: Using the VS Code based IDE UI
 
 1. Open the example in the IDE.
-2. Set the API key in the `.env` file of the workspace root:
+2. Pass the API key as a Dart define when running the app:
 
    ```bash
-   GEMINI_API_KEY=your_api_key_here
+   flutter run --dart-define=GEMINI_API_KEY=your_api_key_here
    ```
