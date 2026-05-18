@@ -1,7 +1,3 @@
-// ---------------------------------------------------------------------------
-// Transport — bridges AiClient ↔ A2uiTransportAdapter
-// ---------------------------------------------------------------------------
-
 import 'package:genui/genui.dart';
 import 'package:genui_pokemon/ai/ai_client.dart';
 import 'package:genui_pokemon/prompts/system_prompt.dart';
