@@ -1,6 +1,9 @@
 # Gen UI Pokemon Assistant
 
 Build a team of Pokemon using Flutter GenUI and Gemini.
+
+Based on my previous CRUD app work with PokeAPIv2 https://github.com/djmaster458/pokemon-team-builder-app 
+
 Actively working to add richer Catalog Items such as condensed teams, move info, and trainer personality tuners to allow you to build the ultimate pokemon team.
 
 Web
