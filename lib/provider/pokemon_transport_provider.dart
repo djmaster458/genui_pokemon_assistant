@@ -4,6 +4,7 @@ import 'package:genui_pokemon/provider/catalog_provider.dart';
 import 'package:genui_pokemon/transport/pokemon_transport.dart';
 
 /// Conversation-scoped transport backed by the current [AiClient].
+/// TODO: Getx or another DI framework is better suited for this than riverpod for conversation-scoped dependencies.
 final pokemonTransportProvider = Provider<PokemonTransport>((ref) {
   final aiClient = ref.watch(aiClientProvider);
   final catalog = ref.watch(catalogProvider);

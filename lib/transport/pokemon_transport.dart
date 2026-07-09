@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:genui/genui.dart';
 import 'package:genui_pokemon/ai/ai_client.dart';
 import 'package:genui_pokemon/prompts/system_prompt.dart';
@@ -9,14 +11,24 @@ class PokemonTransport implements Transport {
     : _history = [(role: 'system', text: buildSystemPrompt(catalog))];
 
   final AiClient _aiClient;
-  final A2uiTransportAdapter _adapter = A2uiTransportAdapter();
+  final StreamController<String> _inputStream = StreamController.broadcast();
+  late final Stream<GenerationEvent> _pipeline = _inputStream.stream
+      .transform(const A2uiParserTransformer())
+      .asBroadcastStream();
   final List<AiMessage> _history;
 
   @override
-  Stream<A2uiMessage> get incomingMessages => _adapter.incomingMessages;
+  Stream<A2uiMessage> get incomingMessages => _pipeline
+      .where((event) => event is A2uiMessageEvent)
+      .cast<A2uiMessageEvent>()
+      .map((event) => event.message);
 
   @override
-  Stream<String> get incomingText => _adapter.incomingText;
+  Stream<String> get incomingText => _pipeline
+      .where((event) => event is TextEvent)
+      .cast<TextEvent>()
+      .map((event) => event.text)
+      .where((text) => text.isNotEmpty);
 
   @override
   Future<void> sendRequest(ChatMessage message) async {
@@ -35,12 +47,14 @@ class PokemonTransport implements Transport {
 
     await for (final chunk in _aiClient.sendStream(prompt, history: _history)) {
       responseBuffer.write(chunk);
-      _adapter.addChunk(chunk);
+      _inputStream.add(chunk);
     }
 
     _history.add((role: 'model', text: responseBuffer.toString()));
   }
 
   @override
-  void dispose() => _adapter.dispose();
+  void dispose() {
+    _inputStream.close();
+  }
 }

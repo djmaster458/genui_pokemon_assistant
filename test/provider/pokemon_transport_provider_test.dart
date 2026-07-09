@@ -72,5 +72,61 @@ void main() {
       ));
       expect(textChunks.join(), 'Bulbasaur');
     });
+
+    test('preserves whitespace-only chunks from AI stream', () async {
+      final client = _CapturingAiClient()
+        ..queuedResponses.add(['Hello', ' ', 'world']);
+      final container = _makeContainer(client);
+      addTearDown(container.dispose);
+
+      final transport = container.read(pokemonTransportProvider);
+      final textChunks = <String>[];
+      final sub = transport.incomingText.listen(textChunks.add);
+      addTearDown(sub.cancel);
+
+      await transport.sendRequest(ChatMessage.user('Say hello'));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(textChunks, ['Hello', ' ', 'world']);
+      expect(textChunks.join(), 'Hello world');
+    });
+
+    test('does not emit A2UI json blocks as text chunks', () async {
+      final client = _CapturingAiClient()
+        ..queuedResponses.add([
+          'I built a team.\n',
+          '```json\n',
+          '{"version":"v0.9","createSurface":{"surfaceId":"team_surface","catalogId":"pokemon_catalog"}}\n',
+          '```\n',
+          'Done.',
+        ]);
+      final container = _makeContainer(client);
+      addTearDown(container.dispose);
+
+      final transport = container.read(pokemonTransportProvider);
+      final textChunks = <String>[];
+      final messages = <A2uiMessage>[];
+      final textSub = transport.incomingText.listen(textChunks.add);
+      final msgSub = transport.incomingMessages.listen(messages.add);
+      addTearDown(textSub.cancel);
+      addTearDown(msgSub.cancel);
+
+      await transport.sendRequest(ChatMessage.user('Build a team'));
+      await Future<void>.delayed(Duration.zero);
+
+      final renderedText = textChunks.join();
+      expect(renderedText, contains('I built a team.'));
+      expect(renderedText, contains('Done.'));
+      expect(renderedText, isNot(contains('"createSurface"')));
+      expect(messages, hasLength(1));
+      expect(
+        messages.first,
+        isA<CreateSurface>().having(
+          (event) => event.surfaceId,
+          'surfaceId',
+          'team_surface',
+        ),
+      );
+    });
   });
 }

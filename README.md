@@ -1,6 +1,6 @@
 # Gen UI Pokemon Assistant
 
-Build a team of Pokemon using Flutter GenUI and Gemini.
+Build a team of Pokemon using Flutter GenUI with a swappable Gemini or OpenAI backend.
 
 Based on my previous CRUD app work with PokeAPIv2 https://github.com/djmaster458/pokemon-team-builder-app 
 
@@ -18,19 +18,39 @@ Mobile
 
 ## Getting Started
 
-### Get an API key
+### Choose a backend
 
-Obtain a Google Cloud API key with access
-to the Generative Language API from the
-[Google AI Studio](https://aistudio.google.com/app/apikey).
+The app supports two AI backends selected at runtime via Dart defines.
 
-## Set up the API key
+1. `gemini` (default)
+2. `openai`
 
-* Option 1: Using the VS Code based IDE UI
+### Run with Gemini
 
-1. Open the example in the IDE.
-2. Pass the API key as a Dart define when running the app:
+Get a Google API key from [Google AI Studio](https://aistudio.google.com/app/apikey), then run:
 
-   ```bash
-   flutter run --dart-define=GEMINI_API_KEY=your_api_key_here
-   ```
+```bash
+flutter run \
+   --dart-define=AI_BACKEND=gemini \
+   --dart-define=GEMINI_API_KEY=your_api_key_here \
+   --dart-define=GEMINI_MODEL=gemini-2.5-flash
+```
+
+### Run with OpenAI
+
+Get an OpenAI API key, then run:
+
+```bash
+flutter run \
+   --dart-define=AI_BACKEND=openai \
+   --dart-define=OPENAI_API_KEY=your_api_key_here \
+   --dart-define=OPENAI_MODEL=gpt-4o-mini
+```
+
+### Supported defines
+
+* `AI_BACKEND`: `gemini` or `openai` (default: `gemini`)
+* `GEMINI_API_KEY`: required when `AI_BACKEND=gemini`
+* `GEMINI_MODEL`: optional (default: `gemini-2.5-flash`)
+* `OPENAI_API_KEY`: required when `AI_BACKEND=openai`
+* `OPENAI_MODEL`: optional (default: `gpt-4o-mini`)

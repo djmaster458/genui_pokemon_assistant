@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:http/http.dart' as http;
 
 /// A single message in the AI conversation history.
 typedef AiMessage = ({String role, String text});
@@ -57,5 +61,86 @@ final class GeminiAiClient implements AiClient {
       apiKey: _apiKey,
       systemInstruction: systemMsg != null ? Content.system(systemMsg) : null,
     );
+  }
+}
+
+/// OpenAI Chat Completions implementation of [AiClient].
+///
+/// Uses server-sent event streaming to emit text deltas as they arrive.
+final class OpenAiClient implements AiClient {
+  OpenAiClient({
+    required String apiKey,
+    String model = 'gpt-4o-mini',
+    Uri? baseUri,
+    http.Client? httpClient,
+  }) : _apiKey = apiKey,
+       _modelName = model,
+       _baseUri = baseUri ?? Uri.parse('https://api.openai.com/v1/'),
+       _httpClient = httpClient ?? http.Client();
+
+  final String _apiKey;
+  final String _modelName;
+  final Uri _baseUri;
+  final http.Client _httpClient;
+
+  @override
+  Stream<String> sendStream(
+    String prompt, {
+    required List<AiMessage> history,
+  }) async* {
+    final messages = <Map<String, String>>[
+      for (final msg in history)
+        {'role': _mapRole(msg.role), 'content': msg.text},
+      {'role': 'user', 'content': prompt},
+    ];
+
+    final request = http.Request('POST', _baseUri.resolve('chat/completions'))
+      ..headers.addAll({
+        'Authorization': 'Bearer $_apiKey',
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
+      })
+      ..body = jsonEncode({
+        'model': _modelName,
+        'messages': messages,
+        'stream': true,
+      });
+
+    final response = await _httpClient.send(request);
+    if (response.statusCode != 200) {
+      final body = await response.stream.bytesToString();
+      throw StateError('OpenAI request failed (${response.statusCode}): $body');
+    }
+
+    await for (final line
+        in response.stream
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())) {
+      if (!line.startsWith('data: ')) continue;
+
+      final payload = line.substring('data: '.length).trim();
+      if (payload == '[DONE]') break;
+
+      final json = jsonDecode(payload) as Map<String, dynamic>;
+      final choices = json['choices'];
+      if (choices is! List || choices.isEmpty) continue;
+
+      final firstChoice = choices.first;
+      if (firstChoice is! Map<String, dynamic>) continue;
+
+      final delta = firstChoice['delta'];
+      if (delta is! Map<String, dynamic>) continue;
+
+      final content = delta['content'];
+      if (content is String && content.isNotEmpty) {
+        yield content;
+      }
+    }
+  }
+
+  String _mapRole(String role) {
+    if (role == 'model') return 'assistant';
+    if (role == 'system') return 'system';
+    return 'user';
   }
 }
