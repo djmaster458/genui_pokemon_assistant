@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:a2ui_core/a2ui_core.dart' as a2ui;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:genui/genui.dart';
@@ -91,6 +92,24 @@ void main() {
       expect(textChunks.join(), 'Hello world');
     });
 
+    test('forwards generated UI interactions to the AI backend', () async {
+      final client = _CapturingAiClient();
+      final container = _makeContainer(client);
+      addTearDown(container.dispose);
+
+      final transport = container.read(pokemonTransportProvider);
+      const interaction =
+          '{"version":"v0.9","action":{"name":"team_confirmed"}}';
+
+      await transport.sendRequest(
+        ChatMessage.user('', parts: [UiInteractionPart.create(interaction)]),
+      );
+
+      expect(client.calls, hasLength(1));
+      expect(client.calls.single.prompt, contains('team_confirmed'));
+      expect(client.calls.single.history.last.text, contains(interaction));
+    });
+
     test('does not emit A2UI json blocks as text chunks', () async {
       final client = _CapturingAiClient()
         ..queuedResponses.add([
@@ -105,7 +124,7 @@ void main() {
 
       final transport = container.read(pokemonTransportProvider);
       final textChunks = <String>[];
-      final messages = <A2uiMessage>[];
+      final messages = <a2ui.A2uiMessage>[];
       final textSub = transport.incomingText.listen(textChunks.add);
       final msgSub = transport.incomingMessages.listen(messages.add);
       addTearDown(textSub.cancel);
@@ -121,7 +140,7 @@ void main() {
       expect(messages, hasLength(1));
       expect(
         messages.first,
-        isA<CreateSurface>().having(
+        isA<a2ui.CreateSurfaceMessage>().having(
           (event) => event.surfaceId,
           'surfaceId',
           'team_surface',

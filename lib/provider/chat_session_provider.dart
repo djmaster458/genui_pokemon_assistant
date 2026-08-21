@@ -3,9 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genui/genui.dart';
 import 'package:genui_pokemon/models/message_model.dart';
-import 'package:genui_pokemon/provider/catalog_provider.dart';
-import 'package:genui_pokemon/provider/pokemon_transport_provider.dart';
-import 'package:genui_pokemon/transport/pokemon_transport.dart';
+import 'package:genui_pokemon/provider/conversation_provider.dart';
 
 // ---------------------------------------------------------------------------
 // State
@@ -40,38 +38,21 @@ class ChatState {
 // ---------------------------------------------------------------------------
 
 class ChatSessionNotifier extends Notifier<ChatState> {
-  late final PokemonTransport _transport;
+  late final Conversation _conversation;
   late final SurfaceController _surfaceController;
 
   @override
   ChatState build() {
-    _transport = ref.watch(pokemonTransportProvider);
-    final catalog = ref.watch(catalogProvider);
+    _conversation = ref.watch(genuiConversationProvider);
+    _surfaceController = _conversation.controller;
 
-    _surfaceController = SurfaceController(catalogs: [catalog]);
-    ref.onDispose(_surfaceController.dispose);
+    final eventsSub = _conversation.events.listen(_onConversationEvent);
+    ref.onDispose(eventsSub.cancel);
 
-    // Wire incoming AI messages into the surface controller.
-    final msgSub = _transport.incomingMessages.listen(
-      _surfaceController.handleMessage,
+    _conversation.state.addListener(_onConversationStateChanged);
+    ref.onDispose(
+      () => _conversation.state.removeListener(_onConversationStateChanged),
     );
-    ref.onDispose(msgSub.cancel);
-
-    // Text chunks update the latest AI message bubble.
-    final textSub = _transport.incomingText.listen(_onTextChunk);
-    ref.onDispose(textSub.cancel);
-
-    // Surface creation/removal tracked as Message entries.
-    final surfaceSub = _surfaceController.surfaceUpdates.listen(
-      _onSurfaceUpdate,
-    );
-    ref.onDispose(surfaceSub.cancel);
-
-    // User interactions on a surface automatically re-send to AI.
-    final submitSub = _surfaceController.onSubmit.listen((message) {
-      _runRequest(() => _transport.sendRequest(message));
-    });
-    ref.onDispose(submitSub.cancel);
 
     return ChatState(surfaceController: _surfaceController);
   }
@@ -80,12 +61,12 @@ class ChatSessionNotifier extends Notifier<ChatState> {
   Future<void> sendMessage(String text) async {
     if (text.trim().isEmpty) return;
     _appendMessage(Message.user(text));
-    await _runRequest(() => _transport.sendRequest(ChatMessage.user(text)));
+    await _conversation.sendRequest(ChatMessage.user(text));
   }
 
   /// Invalidate the transport to empty history and rebuild this notifier
   void clearConversation() {
-    ref.invalidate(pokemonTransportProvider);
+    ref.invalidate(genuiConversationProvider);
   }
 
   // -- Private helpers -------------------------------------------------------
@@ -107,22 +88,30 @@ class ChatSessionNotifier extends Notifier<ChatState> {
     state = state.copyWith(messages: msgs);
   }
 
-  void _onSurfaceUpdate(SurfaceUpdate update) {
-    if (update is SurfaceAdded) {
-      // Only add once — surface updates fire multiple times.
-      final already = state.messages.any(
-        (m) => m.surfaceId == update.surfaceId,
-      );
-      if (!already) _appendMessage(Message.aiSurface(update.surfaceId));
+  void _onConversationEvent(ConversationEvent event) {
+    switch (event) {
+      case ConversationContentReceived(:final text):
+        _onTextChunk(text);
+      case ConversationSurfaceAdded(:final surfaceId):
+        final already = state.messages.any((m) => m.surfaceId == surfaceId);
+        if (!already) _appendMessage(Message.aiSurface(surfaceId));
+      case ConversationSurfaceRemoved(:final surfaceId):
+        state = state.copyWith(
+          messages: state.messages
+              .where((m) => m.surfaceId != surfaceId)
+              .toList(),
+        );
+      case ConversationComponentsUpdated():
+      case ConversationWaiting():
+      case ConversationError():
+        break;
     }
   }
 
-  Future<void> _runRequest(Future<void> Function() body) async {
-    state = state.copyWith(isProcessing: true);
-    try {
-      await body();
-    } finally {
-      state = state.copyWith(isProcessing: false);
+  void _onConversationStateChanged() {
+    final isWaiting = _conversation.state.value.isWaiting;
+    if (state.isProcessing != isWaiting) {
+      state = state.copyWith(isProcessing: isWaiting);
     }
   }
 }
